@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Voice Clone Detection — Prototype</title>
+<link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="waveform-icon">
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
+    <div>
+      <h1>AI-Based Real-Time Voice Clone Detection</h1>
+      <p class="subtitle">Prototype — SIH26104 · dual-layer synthetic speech + speaker verification</p>
+    </div>
+  </div>
+  <div class="status-pill" id="statusPill">Speaker not enrolled</div>
+</header>
+
+<main>
+  <section class="panel" id="enrollPanel">
+    <h2><span class="step-num">1</span> Enroll a Reference Voice</h2>
+    <p class="hint">Record or upload 2–5 seconds of the person's genuine voice. This becomes the "known speaker" the system compares future calls against.</p>
+    <div class="controls">
+      <button id="enrollRecordBtn" class="btn btn-primary">● Record Reference</button>
+      <span id="enrollTimer" class="timer">00:00</span>
+      <label class="file-btn">
+        Upload WAV
+        <input type="file" id="enrollFile" accept=".wav,audio/wav" hidden />
+      </label>
+      <button id="resetBtn" class="btn btn-ghost">Reset Enrollment</button>
+    </div>
+    <div id="enrollResult" class="result-line"></div>
+  </section>
+
+  <section class="panel" id="analyzePanel">
+    <h2><span class="step-num">2</span> Analyze a Call</h2>
+    <p class="hint">Record or upload the audio you want to check. It's split into 1.5s windows and scanned continuously — like monitoring a live call.</p>
+    <div class="controls">
+      <button id="analyzeRecordBtn" class="btn btn-primary">● Record Call Audio</button>
+      <span id="analyzeTimer" class="timer">00:00</span>
+      <label class="file-btn">
+        Upload WAV
+        <input type="file" id="analyzeFile" accept=".wav,audio/wav" hidden />
+      </label>
+      <button id="runAnalysisBtn" class="btn btn-accent" disabled>Analyze</button>
+    </div>
+    <div id="analyzeError" class="error-line"></div>
+  </section>
+
+  <section class="panel" id="textPanel">
+    <h2><span class="step-num">3</span> Check Transcript for AI-Scripted Phrasing</h2>
+    <p class="hint">The transcript is filled automatically while you record the call using your browser's speech-to-text. Use Chrome/Edge and allow microphone access for automatic transcription. You can edit it before checking. Checks sentence structure, stock phrasing, and natural disfluencies — the same style signal QuillBot's / GPTZero's AI-text detectors use, applied to a call script.</p>
+    <textarea id="transcriptInput" class="transcript-box" rows="5" placeholder="e.g. Furthermore, it is important to note that your account security is our top priority. Please verify your identity immediately..."></textarea>
+    <div class="controls" style="margin-top:10px;">
+      <button id="checkTextBtn" class="btn btn-accent">Analyze Text</button>
+      <span id="textError" class="error-line" style="margin-top:0;"></span>
+    </div>
+    <div id="textResult" class="text-result" style="display:none;">
+      <div class="verdict-banner" id="textVerdictBanner">
+        <span id="textVerdictLabel">—</span>
+        <span class="verdict-score" id="textVerdictScore"></span>
+      </div>
+      <div class="breakdown-bars" id="breakdownBars"></div>
+      <div id="stockPhrasesLine" class="caption"></div>
+    </div>
+  </section>
+
+  <section class="panel" id="resultsPanel" style="display:none;">
+    <h2>Results</h2>
+
+    <div id="verdictBanner" class="verdict-banner">
+      <span id="verdictLabel">—</span>
+      <span id="verdictScore" class="verdict-score"></span>
+    </div>
+
+    <div class="results-grid">
+      <div class="results-col">
+        <h3>Per-Window Timeline</h3>
+        <div id="timeline" class="timeline"></div>
+
+        <h3 style="margin-top:22px;">Window Detail</h3>
+        <table class="detail-table" id="detailTable">
+          <thead>
+            <tr><th>Window</th><th>Synthetic Prob.</th><th>Speaker Sim.</th><th>Pitch (Hz)</th><th>Risk</th></tr>
+          </thead>
+          <tbody id="detailTableBody"></tbody>
+        </table>
+      </div>
+      <div class="results-col">
+        <h3>Mel-Spectrogram</h3>
+        <img id="melspecImg" class="melspec-img" alt="mel-spectrogram" />
+        <p class="caption">Log-mel energy over time for the full clip. The AI detector and speaker-verification module both derive their features from representations like this.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="note-footer">
+    <strong>Prototype note:</strong> the synthetic-speech classifier is trained on the supplied human-vs-AI voice dataset. The transcript check is a transparent heuristic, not a QuillBot/GPTZero model. Swap in those for production accuracy —
+    the feature extraction, chunking, fusion, and API structure are already built to support it.
+  </footer>
+</main>
+
+<script src="/static/recorder.js"></script>
+<script src="/static/app.js"></script>
+</body>
+</html>
